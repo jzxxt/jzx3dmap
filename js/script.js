@@ -92,56 +92,24 @@ var lesson10 = {
     this.plane.visible = false;
     this.scene.add(this.plane);
 
-    var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
-    floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
-    floorTexture.repeat.set( 80, 80 );
-    // DoubleSide: render texture on both sides of mesh
-    var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
+    // ground
+    var mesh = new THREE.Mesh( new THREE.PlaneGeometry( 10000, 10000 ), new THREE.MeshPhongMaterial( { color: 0x999999, depthWrite: false, side: THREE.DoubleSide } ) );
+    mesh.rotation.x = - Math.PI / 2;
+    this.scene.add( mesh );
+
+    var grid = new THREE.GridHelper( 10000, 20, 0x000000, 0x000000 );
+    grid.material.opacity = 0.5;
+    grid.material.transparent = true;
+    this.scene.add( grid );
+
+    var floorMaterial = new THREE.MeshBasicMaterial( { color: '#aaaaaa', side: THREE.DoubleSide } );
     var floorGeometry = new THREE.PlaneGeometry(10000, 10000, 1, 1);
     var floor = new THREE.Mesh(floorGeometry, floorMaterial);
-    floor.position.y = 0;
+    floor.position.y = -2;
     floor.rotation.x = Math.PI / 2;
     this.scene.add(floor);
 
-    // GEOMETRY //
-    //var xiangweiBoxGeometry = new THREE.BoxGeometry( 100, 120, 240);
-    //var xiangweiBoxMaterial=new THREE.MeshBasicMaterial({transparent:true,opacity:1});
-    //var boxGeometry = new THREE.BoxGeometry( 100, 120, 240);
-    /*
-    for(i=1;i<20;i++){
-      
-      var boxMaterials = this.getBoxMaterial('TBJU001234'); 
-      box = new THREE.Mesh( boxGeometry, boxMaterials);
-      this.draggables.push(box);
-      //box.position.set(-500+i*110, 61, 0);
-      box.position.x = -500+i*110;
-      box.position.y = 61;
-      box.position.z = 0;
-      this.scene.add( box ); 
-  
-      xiangwei = new THREE.Mesh( xiangweiBoxGeometry, xiangweiBoxMaterial);
-      //this.draggables.push(xiangwei);
-      xiangwei.position.x = -500+i*110;
-      xiangwei.position.y = 61;
-      xiangwei.position.z = 0;
-      this.scene.add( xiangwei ); 
-
-      xiangwei = new THREE.Mesh( xiangweiBoxGeometry, xiangweiBoxMaterial);
-      //this.draggables.push(xiangwei);
-      xiangwei.position.x = -500+i*110;
-      xiangwei.position.y = 61+122;
-      xiangwei.position.z = 0;
-      this.scene.add( xiangwei ); 
-
-      xiangwei = new THREE.Mesh( xiangweiBoxGeometry, xiangweiBoxMaterial);
-      //this.draggables.push(xiangwei);
-      xiangwei.position.x = -500+i*110;
-      xiangwei.position.y = 61+244;
-      xiangwei.position.z = 0;
-      this.scene.add( xiangwei ); 
-      
-    }
-    */
+    this.addText('sample text','#ff0000');
 
     var xiangweiBoxGeometry = new THREE.BoxGeometry( 100, 120, 240);
     var boxGeometry = new THREE.BoxGeometry( 100, 120, 240);
@@ -187,14 +155,6 @@ var lesson10 = {
     for(k=0;k<6;k++){
       boxMaterialArray.push(material);
     }
-    /*
-    boxMaterialArray.push( new THREE.MeshBasicMaterial( { color: 0x3355ff } ) );
-    boxMaterialArray.push( new THREE.MeshBasicMaterial( { color: 0x5577ff } ) );
-    boxMaterialArray.push( this.genFaceMaterial('#5599ff',this.renderer,text) );
-    boxMaterialArray.push( new THREE.MeshBasicMaterial( { color: 0x7799ff } ) );
-    boxMaterialArray.push( this.genFaceMaterial('#3333ff',this.renderer,text) );
-    boxMaterialArray.push( new THREE.MeshBasicMaterial( { color: 0x99aaff } ) );
-    */
     var boxMaterials = new THREE.MeshFaceMaterial( boxMaterialArray );
     return boxMaterials;
   },
@@ -224,112 +184,6 @@ var lesson10 = {
     skyMesh = new THREE.Mesh(skyGeo, skyMat);
     this.scene.add(skyMesh);
   },
-  /*
-  onDocumentMouseDown: function (event) {
-    // Get mouse position
-    var mouseX = (event.clientX / window.innerWidth) * 2 - 1;
-    var mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
-
-    // Get 3D vector from 3D mouse position using 'unproject' function
-    var vector = new THREE.Vector3(mouseX, mouseY, 1);
-    vector.unproject(lesson10.camera);
-
-    // Set the raycaster position
-    lesson10.raycaster.set( lesson10.camera.position, vector.sub( lesson10.camera.position ).normalize() );
-
-    // Find all intersected draggables
-    var intersects = lesson10.raycaster.intersectObjects(lesson10.draggables);
-
-    if (intersects.length > 0) {
-      // Disable the controls
-      lesson10.controls.enabled = false;
-
-      // Set the selection - first intersected object
-      lesson10.selection = intersects[0].object;
-
-      // Calculate the offset
-      var intersects = lesson10.raycaster.intersectObject(lesson10.plane);
-      lesson10.offset.copy(intersects[0].point).sub(lesson10.plane.position);
-    }
-  },
-  onDocumentMouseMove: function (event) {
-    event.preventDefault();
-
-    // Get mouse position
-    var mouseX = (event.clientX / window.innerWidth) * 2 - 1;
-    var mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
-
-    // Get 3D vector from 3D mouse position using 'unproject' function
-    var vector = new THREE.Vector3(mouseX, mouseY, 1);
-    vector.unproject(lesson10.camera);
-
-    // Set the raycaster position
-    lesson10.raycaster.set( lesson10.camera.position, vector.sub( lesson10.camera.position ).normalize() );
-
-    if (lesson10.selection) {
-      // Check the position where the plane is intersected
-      var intersects = lesson10.raycaster.intersectObject(lesson10.plane);
-      
-      // Reposition the object based on the intersection point with the plane
-      lesson10.selection.position.copy(intersects[0].point.sub(lesson10.offset));
-
-    } else {
-      // Update position of the plane if need
-      var intersects = lesson10.raycaster.intersectObjects(lesson10.draggables);
-      if (intersects.length > 0) {
-        lesson10.plane.position.copy(intersects[0].object.position);
-        lesson10.plane.lookAt(lesson10.camera.position);
-      }
-    }
-  },
-  onDocumentMouseUp: function (event) {
-    // Enable the controls
-    lesson10.controls.enabled = true;
-    lesson10.selection = null;
-  },
-  
-  onDocumentMouseMove: function (event) {
-    event.preventDefault();
-    if(lesson10.selection==null) return;
-    lesson10.mouse.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
-
-    lesson10.raycaster.setFromCamera( lesson10.mouse, lesson10.camera );
-
-    var intersects = lesson10.raycaster.intersectObjects( lesson10.draggables );
-
-    if ( intersects.length > 1 ) {
-      var distance=1000;//箱子的最窄边
-      var tmpDistance=0;
-      for(i=1;i<intersects.length;i++){
-        tmpDistance=getDistance(intersects[i].object.position,lesson10.selection.position);
-        console.log('->'+tmpDistance);
-        if(tmpDistance<distance){
-          
-          distance=tmpDistance;
-          lesson10.tmpDroppable=intersects[i].object;
-        }
-      }
-      if(lesson10.droppable!==lesson10.tmpDroppable){
-        for(i=0;i<6;i++){
-          switch (i) {
-            case 0:
-            case 1:
-              lesson10.tmpDroppable.material[i].color.setHex( 0x006600 );
-              break;
-            case 5:
-              lesson10.tmpDroppable.material[i].color.setHex( 0x006600 );
-              break;
-            default:
-              lesson10.tmpDroppable.material[i].color.setHex( 0xffff00 );
-              break;
-          }
-          if(lesson10.droppable && lesson10.droppable!==lesson10.selection) lesson10.droppable.material[i].color.setHex(lesson10.faceMaterial[i]);
-        }
-        lesson10.droppable=lesson10.tmpDroppable;
-      }
-    }
-  },
-  */
   onDocumentMouseMove: function (event) {
     //如果没有拖动则不理会
     if(lesson10.selection==null) return;
@@ -339,10 +193,12 @@ var lesson10 = {
     var intersects = lesson10.raycaster.intersectObjects( lesson10.droppables );
 
     if ( intersects.length > 0 ) {
-      var distance=2000;//箱子的最窄边
+      var distance=5000;//箱子的最窄边
       var tmpDistance=0;
       //找到距离最近的箱位
       for(i=1;i<intersects.length;i++){
+        console.log('box found：'+intersects[i].object.name);
+        //TODO:不能只根据距离，如果箱位上有箱子则距离近也不行
         tmpDistance=getDistance(intersects[i].object.position,lesson10.selection.position);
         if(parseInt(tmpDistance)<distance){
           console.log(distance+' '+tmpDistance);
@@ -418,6 +274,45 @@ var lesson10 = {
     }
     lesson10.selection=null;
     lesson10.droppable=null;
+  },
+  addText: function(message,color="#0000ff",fontSize=200,position={x:500,y:1,z:150}){
+    var loader = new THREE.FontLoader();
+    loader.load( 'fonts/helvetiker_regular.typeface.json', function ( font ) {
+      var xMid, text;
+      var textShape = new THREE.BufferGeometry();
+      var matDark = new THREE.LineBasicMaterial( {
+        color: color,
+        side: THREE.DoubleSide
+      } );
+
+      var matLite = new THREE.MeshBasicMaterial( {
+        color: color,
+        transparent: true,
+        opacity: 0.4,
+        side: THREE.DoubleSide
+      } );
+
+      var shapes = font.generateShapes( message, fontSize, 2 );
+
+      var geometry = new THREE.ShapeGeometry( shapes );
+
+      geometry.computeBoundingBox();
+
+      xMid = - 0.5 * ( geometry.boundingBox.max.x - geometry.boundingBox.min.x );
+
+      geometry.translate( xMid, 0, 0 );
+
+      // make shape ( N.B. edge view not visible )
+
+      textShape.fromGeometry( geometry );
+
+      text = new THREE.Mesh( textShape, matLite );
+      text.position.x = position.x;
+      text.position.y=position.y;
+      text.position.z = position.z;
+      text.rotation.x = - Math.PI / 2;
+      lesson10.scene.add( text );
+    }); //end load function
   }
 };
 
